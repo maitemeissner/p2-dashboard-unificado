@@ -1,15 +1,6 @@
-import mysql from 'mysql2/promise';
+import { createClient } from '@supabase/supabase-js'
 
-const pool = mysql.createPool({
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASS || '',
-  database: process.env.DB_NAME || 'p2_dashboard',
-  waitForConnections: true,
-  connectionLimit: 10,
-});
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 
-export async function query(sql: string, params?: any[]) {
-  const [rows] = await pool.execute(sql, params);
-  return rows;
-}
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)

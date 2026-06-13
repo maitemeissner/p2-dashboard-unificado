@@ -1,9 +1,9 @@
 node_modules/
 .next/
 out/
-.env
 .env.local
-*.pyc
-__pycache__/
-.vercel
-dist/
+.env.development.local
+.env.test.local
+.env.production.local
+*.tsbuildinfo
+next-env.d.ts

@@ -1,22 +1,24 @@
-import { Card } from 'react-bootstrap';
+import React from 'react'
 
-export default function PowerBiEmbed() {
+interface PowerBiEmbedProps {
+  url: string
+  titulo?: string
+}
+
+export default function PowerBiEmbed({ url, titulo }: PowerBiEmbedProps) {
   return (
-    <Card>
-      <Card.Body>
-        <Card.Title>Power BI — Análise Avançada</Card.Title>
-        <Card.Text className="text-muted">
-          Após publicar seu dashboard no Power BI Service, cole o iframe abaixo.
-        </Card.Text>
-        <div className="ratio ratio-16x9">
-          <iframe
-            src={process.env.NEXT_PUBLIC_POWERBI_URL || ''}
-            title="Power BI Dashboard"
-            allowFullScreen
-            style={{ border: 'none' }}
-          />
-        </div>
-      </Card.Body>
-    </Card>
-  );
+    <div className="w-full">
+      {titulo && (
+        <h2 className="text-lg font-semibold mb-2">{titulo}</h2>
+      )}
+      <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+        <iframe
+          src={url}
+          className="absolute top-0 left-0 w-full h-full rounded border"
+          allowFullScreen
+          title={titulo || 'Power BI Dashboard'}
+        />
+      </div>
+    </div>
+  )
 }

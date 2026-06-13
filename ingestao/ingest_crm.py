@@ -1,45 +1,23 @@
 import os
-import mysql.connector
-from datetime import datetime, timedelta
-import random
+import json
+from supabase import create_client, Client
 
-DB_CONFIG = {
-    'host': os.getenv('DB_HOST', 'localhost'),
-    'user': os.getenv('DB_USER', 'root'),
-    'password': os.getenv('DB_PASS', ''),
-    'database': os.getenv('DB_NAME', 'p2_dashboard'),
-}
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
+SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "")
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-def ingest():
-    conn = mysql.connector.connect(**DB_CONFIG)
-    cursor = conn.cursor()
+MOCK_DATA = [
+    {"metric": "Ticket Medio", "valor": 185.50, "variacao": 12.3},
+    {"metric": "Volume de Chamados", "valor": 3420, "variacao": -5.1},
+    {"metric": "Tempo Medio de Resolucao (h)", "valor": 4.2, "variacao": -8.7},
+    {"metric": "SLA Cumprido (%)", "valor": 94.5, "variacao": 2.1},
+    {"metric": "Taxa de Reabertura (%)", "valor": 6.8, "variacao": 0.5},
+]
 
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS tickets (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            canal VARCHAR(50),
-            csat DECIMAL(3,2),
-            tma_minutos INT,
-            data_abertura DATE,
-            data_ingestao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
+def main():
+    for kpi in MOCK_DATA:
+        supabase.table("operacoes_kpi").upsert(kpi, on_conflict="metric").execute()
+    print(f"Ingestao CRM concluida: {len(MOCK_DATA)} KPIs upserted.")
 
-    canais = ['Chat', 'Ticket', 'Voz', 'Email']
-    for i in range(100):
-        canal = random.choice(canais)
-        csat = round(random.uniform(1, 5), 2)
-        tma = random.randint(5, 180)
-        data = datetime.now() - timedelta(days=random.randint(0, 89))
-        cursor.execute(
-            'INSERT INTO tickets (canal, csat, tma_minutos, data_abertura) VALUES (%s, %s, %s, %s)',
-            (canal, csat, tma, data.strftime('%Y-%m-%d'))
-        )
-
-    conn.commit()
-    cursor.close()
-    conn.close()
-    print("Ingestão CRM concluída: 100 tickets inseridos")
-
-if __name__ == '__main__':
-    ingest()
+if __name__ == "__main__":
+    main()

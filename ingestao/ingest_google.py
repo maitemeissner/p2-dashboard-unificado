@@ -1,32 +1,21 @@
 import os
-import mysql.connector
+import json
+from supabase import create_client, Client
 
-DB_CONFIG = {
-    'host': os.getenv('DB_HOST', 'localhost'),
-    'user': os.getenv('DB_USER', 'root'),
-    'password': os.getenv('DB_PASS', ''),
-    'database': os.getenv('DB_NAME', 'p2_dashboard'),
-}
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
+SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "")
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-def ingest():
-    conn = mysql.connector.connect(**DB_CONFIG)
-    cursor = conn.cursor()
+MOCK_DATA = [
+    {"nome": "Campanha Google Search", "plataforma": "Google Ads", "investimento": 18000.0, "impressoes": 280000, "cliques": 15200, "conversoes": 1100, "status": "Ativa"},
+    {"nome": "Campanha Google Display", "plataforma": "Google Ads", "investimento": 12000.0, "impressoes": 510000, "cliques": 8700, "conversoes": 620, "status": "Pausada"},
+    {"nome": "Campanha Google Video", "plataforma": "Google Ads", "investimento": 9500.0, "impressoes": 190000, "cliques": 5600, "conversoes": 380, "status": "Ativa"},
+]
 
-    dados_mock = [
-        ('Campanha Shopping', 'Google Ads', 2500.00, 60, 3.2, 'ativa', '2026-02-10'),
-        ('Display Prospecting', 'Google Ads', 1800.00, 35, 2.4, 'pausada', '2026-01-05'),
-    ]
+def main():
+    for campanha in MOCK_DATA:
+        supabase.table("campanhas").upsert(campanha, on_conflict="nome").execute()
+    print(f"Ingestao Google Ads concluida: {len(MOCK_DATA)} campanhas upserted.")
 
-    for c in dados_mock:
-        cursor.execute(
-            'INSERT INTO campanhas (nome, plataforma, investimento, conversoes, roas, status, data_inicio) VALUES (%s, %s, %s, %s, %s, %s, %s)',
-            c
-        )
-
-    conn.commit()
-    cursor.close()
-    conn.close()
-    print(f"Ingestão Google Ads concluída: {len(dados_mock)} campanhas inseridas")
-
-if __name__ == '__main__':
-    ingest()
+if __name__ == "__main__":
+    main()
